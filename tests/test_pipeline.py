@@ -3,6 +3,7 @@ from decimal import Decimal
 from data_pipeline.generate import generate_csv
 from data_pipeline.io import load_csv
 from data_pipeline.repository import connect, insert_file
+from data_pipeline.s3_storage import S3Storage
 from data_pipeline.transform import aggregate_transactions
 
 
@@ -43,4 +44,20 @@ def test_retry_retries_transient_insert_failure(tmp_path):
         _insert_once(db, key, txs, aggs)
 
     assert insert_file(db, "retry-file", txs, aggregates, sleep_seconds=0, operation=flaky)
+    assert calls["count"] == 2
+
+
+def test_s3_download_retries_transient_failure(tmp_path):
+    storage = S3Storage("http://s3.test", "key", "secret", "transactions")
+    calls = {"count": 0}
+
+    def flaky_download(bucket, key, destination):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            raise RuntimeError("temporary S3 outage")
+        tmp_path.joinpath("downloaded.csv").write_text("ok", encoding="utf-8")
+
+    storage.client.download_file = flaky_download
+    destination = storage.download("incoming/file.csv", tmp_path / "downloaded.csv", attempts=2)
+    assert destination.read_text(encoding="utf-8") == "ok"
     assert calls["count"] == 2
