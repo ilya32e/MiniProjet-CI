@@ -29,7 +29,8 @@ def generate_multiple_csv(output_dir: str | Path, count: int = 3) -> list[Path]:
     files = []
     for index in range(1, count + 1):
         rows = [row.copy() for row in ROWS]
-        rows[0][-1] = f"{1200 + index * 100}.00"
+        for row_number, row in enumerate(rows):
+            row[-1] = f"{float(row[-1]) + index * 100 + row_number:.2f}"
         files.append(generate_csv(output_dir, f"transactions_{index:03d}.csv", rows))
     return files
 

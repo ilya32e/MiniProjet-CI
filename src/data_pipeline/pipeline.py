@@ -20,7 +20,9 @@ def run_from_s3(storage, keys: list[str], work_dir: str = ".s3-cache", database:
     db = connect(database)
     for key in keys:
         local_path = storage.download(key, Path(work_dir) / Path(key).name)
-        file_key = hashlib.sha256(local_path.read_bytes()).hexdigest()
+        # La clé S3 est l'identité stable du fichier : un même objet ne doit
+        # pas être retraité même si sa représentation locale change.
+        file_key = f"s3:{key}"
         transactions = load_csv(local_path)
         insert_file(db, file_key, transactions, aggregate_transactions(transactions))
     db.close()

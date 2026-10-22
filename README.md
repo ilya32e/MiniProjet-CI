@@ -17,7 +17,7 @@ La table `processed_files` garantit qu'un fichier déjà traité n'est pas retra
 
 ## Niveau 2
 
-`docker compose up --build` démarre MinIO, génère trois CSV, les envoie dans le bucket `transactions`, les relit depuis S3 avec retry, puis les insère dans SQLite. Le dashboard Streamlit est disponible sur `http://localhost:8501`. L'adaptateur [s3_storage.py](./src/data_pipeline/s3_storage.py) utilise l'API S3 de MinIO avec retries et le traitement pur reste indépendant du stockage.
+`docker compose up --build` démarre RustFS (stockage S3 local), génère trois CSV, les envoie dans le bucket `transactions`, les relit depuis S3 avec retry, puis les insère dans SQLite. Le dashboard Streamlit est disponible sur `http://localhost:8501`. L'API S3 est exposée sur `http://localhost:9010` et la console RustFS sur `http://localhost:9011`. À l'intérieur du réseau Docker, le pipeline utilise `http://minio:9000`. L'adaptateur [s3_storage.py](./src/data_pipeline/s3_storage.py) reste compatible S3/MinIO/RustFS.
 
 ## Démonstration d'échec
 

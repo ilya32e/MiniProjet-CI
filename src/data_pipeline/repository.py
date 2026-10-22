@@ -51,5 +51,10 @@ def _insert_once(db, file_key, transactions, aggregates):
                               ("sent_by_bank", aggregates.sent_by_bank),
                               ("received_by_iban", aggregates.received_by_iban)):
         for key, total in values.items():
-            db.execute("INSERT INTO aggregate_values VALUES (?,?,?)", (dimension, key, str(total)))
+            db.execute(
+                """INSERT INTO aggregate_values VALUES (?,?,?)
+                   ON CONFLICT(dimension, dimension_key)
+                   DO UPDATE SET total = aggregate_values.total + excluded.total""",
+                (dimension, key, str(total)),
+            )
     db.execute("INSERT INTO processed_files VALUES (?, datetime('now'))", (file_key,))
