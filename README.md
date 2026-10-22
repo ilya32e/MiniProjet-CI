@@ -17,7 +17,13 @@ La table `processed_files` garantit qu'un fichier déjà traité n'est pas retra
 
 ## Niveau 2
 
-`docker compose up --build` démarre RustFS (stockage S3 local), génère trois CSV, les envoie dans le bucket `transactions`, les relit depuis S3 avec retry, puis les insère dans SQLite. Le dashboard Streamlit est disponible sur `http://localhost:8501`. L'API S3 est exposée sur `http://localhost:9010` et la console RustFS sur `http://localhost:9011`. À l'intérieur du réseau Docker, le pipeline utilise `http://minio:9000`. L'adaptateur [s3_storage.py](./src/data_pipeline/s3_storage.py) reste compatible S3/MinIO/RustFS.
+## Extensions niveau 3
+
+- [ocr.py](./src/data_pipeline/ocr.py) fournit une extraction OCR optionnelle avec Tesseract.
+- [text_extract.py](./src/data_pipeline/text_extract.py) fournit une extraction légère depuis texte brut, remplaçable par un SLM local.
+- [infra/main.tf](./infra/main.tf) déploie RustFS via Terraform ; la CD valide Terraform puis déploie Docker.
+
+`docker compose up --build` démarre PostgreSQL et RustFS (stockage S3 local), génère trois CSV, les envoie dans le bucket `transactions`, les relit depuis S3 avec retry, puis les insère dans PostgreSQL. Le dashboard Streamlit lit la même base PostgreSQL et est disponible sur `http://localhost:8501`. L'API S3 est exposée sur `http://localhost:9010` et la console RustFS sur `http://localhost:9011`. À l'intérieur du réseau Docker, le pipeline utilise `http://minio:9000`. L'adaptateur [s3_storage.py](./src/data_pipeline/s3_storage.py) reste compatible S3/MinIO/RustFS. Les tests locaux utilisent SQLite en mémoire pour rester rapides.
 
 ## Démonstration d'échec
 

@@ -8,5 +8,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform -chdir=infra init -backend=false
+      - run: terraform -chdir=infra validate
       - run: docker compose build
       - run: docker compose config
+      - run: docker compose up -d
+      - run: docker compose ps
